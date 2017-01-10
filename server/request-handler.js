@@ -18,14 +18,142 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 var _ = require('underscore');
+var fs = require('fs');
 var messages = [];
+
+
 var requestHandler = function(request, response) {
-  console.log('request: ', request.url);
-  if (request.url !== '/classes/messages') {
+  console.log('request.url: ', request.url);
+  if (request.url === '/' || request.url === '/?username=anonymous') {
+    fs.readFile('/Users/student/Desktop/hrsf53-chatterbox-client/client/index.html', function(err, data) {
+      if (err) {
+        throw err;
+      }
+      data = data.toString();
+      var statusCode = 200;
+      var headers = defaultCorsHeaders;
+      headers['Content-Type'] = 'text/html';
+      response.writeHead(statusCode, headers);
+      response.end(data);
+      console.log('responsed html');
+    });
+  } else if ( request.url === '/classes/messages') {
+    console.log('Serving request type ' + request.method + ' for url ' + request.url);
+    if (request.method === 'POST') {
+      if (request._postData) {
+        var message = request._postData;
+        messages.push(message);
+      } else {
+        request.on('data', function(chunk) {
+          var message = (chunk.toString());
+          messages.push(JSON.parse(message));
+        });  
+      }
+      var statusCode = 201;
+      //console.log(_.findKey(response, 'username'));
+    } else if ( request.method === 'GET') {
+      var statusCode = 200; 
+
+    }
+    // The outgoing status.
+    // See the note below about CORS headers.
+    var headers = defaultCorsHeaders;
+
+    // Tell the client we are sending them plain text.
+    //
+    // *You will need to change this if you are sending something
+    // other than plain text, like JSON or HTML.
+    headers['Content-Type'] = 'application/json';
+
+    // .writeHead() writes to the request line and headers of the response,
+    // which includes the status and all headers.
+    response.writeHead(statusCode, headers);
+
+    // Make sure to always call response.end() - Node may not send
+    // anything back to the client until you do. The string you pass to
+    // response.end() will be the body of the response - i.e. what shows
+    // up in the browser.
+    //
+    // Calling .end "flushes" the response's internal buffer, forcing
+    // node to actually send all the data over to the client.
+    response.end(JSON.stringify({results: messages}));
+  } else if (request.url === '/styles/styles.css') {
+    fs.readFile('/Users/student/Desktop/hrsf53-chatterbox-client/client/styles/styles.css', function(err, data) {
+      if (err) {
+        throw err;
+      }
+      data = data.toString();
+      var statusCode = 200;
+      var headers = defaultCorsHeaders;
+      headers['Content-Type'] = 'text/css';
+      response.writeHead(statusCode, headers);
+      response.end(data);
+      console.log('responded css');
+    });
+  } else if (request.url === '/bower_components/jquery/dist/jquery.js') {
+    fs.readFile('/Users/student/Desktop/hrsf53-chatterbox-client/client/bower_components/jquery/dist/jquery.js', function(err, data) {
+      if (err) {
+        throw err;
+      }
+      data = data.toString();
+      var statusCode = 200;
+      var headers = defaultCorsHeaders;
+      headers['Content-Type'] = 'text/javascript';
+      response.writeHead(statusCode, headers);
+      response.end(data);
+      console.log('responded bower/jquery');
+    });
+  } else if (request.url === '/env/config.js') {
+    fs.readFile('/Users/student/Desktop/hrsf53-chatterbox-client/client/env/config.js', function(err, data) {
+      if (err) {
+        throw err;
+      }
+      data = data.toString();
+      var statusCode = 200;
+      var headers = defaultCorsHeaders;
+      headers['Content-Type'] = 'text/javascript';
+      response.writeHead(statusCode, headers);
+      response.end(data);
+      console.log('responded config.js');
+    });
+  } else if (request.url === '/scripts/app.js') {
+    fs.readFile('/Users/student/Desktop/hrsf53-chatterbox-client/client/scripts/app.js', function(err, data) {
+      if (err) {
+        throw err;
+      }
+      data = data.toString();
+      var statusCode = 200;
+      var headers = defaultCorsHeaders;
+      headers['Content-Type'] = 'text/javascript';
+      response.writeHead(statusCode, headers);
+      response.end(data);
+      console.log('responded app.js');
+    });
+  } else if (request.url === '/images/spiffygif_46x46.gif') {
+    fs.readFile('/Users/student/Desktop/hrsf53-chatterbox-client/client/images/spiffygif_46x46.gif', function(err, data) {
+      if (err) {
+        throw err;
+      }
+      data = data.toString();
+      var statusCode = 200;
+      var headers = defaultCorsHeaders;
+      headers['Content-Type'] = 'image/gif';
+      response.writeHead(statusCode, headers);
+      response.end(data);
+      console.log('responded spiffygif_46x46.gif');
+    });
+  } else if (request.url === '/?username=anonymous') {
+    var statusCode = 200;
+    console.log('inside of anonymous');
+    var headers = defaultCorsHeaders;
+    response.writeHead(statusCode);
+    response.end();
+  } else {
     response.writeHead(404);
     response.end();
   }
-  // console.log('response', response);
+  // if (request.url !== '/classes/messages') {
+  // }
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -40,46 +168,6 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  console.log('Serving request type ' + request.method + ' for url ' + request.url);
-  if (request.method === 'POST') {
-    if (request._postData) {
-      var message = request._postData;
-      messages.push(message);
-    } else {
-      request.on('data', function(chunk) {
-        var message = (chunk.toString());
-        messages.push(JSON.parse(message));
-      });  
-    }
-    var statusCode = 201;
-    //console.log(_.findKey(response, 'username'));
-  } else if ( request.method === 'GET') {
-    var statusCode = 200; 
-
-  }
-  // The outgoing status.
-
-  // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
-
-  // Tell the client we are sending them plain text.
-  //
-  // *You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'application/json';
-
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
-
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
-  response.end(JSON.stringify({results: messages}));
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
